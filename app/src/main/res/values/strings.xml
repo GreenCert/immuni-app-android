@@ -419,6 +419,7 @@ Operating system: iOS 13.5.1; Model: iPhone XS; Exposure notifications: Active; 
     <string name="warning_title_modal">Attention</string>
     <string name="warning_message_modal">It is important to communicate the exact symptom onset date to initiate accurate contact tracking. Select \"no symptoms\" only in case of complete absence of symptoms or the appearance of symptoms after the swab.</string>
 
+    <string name="home_what_do_you_want_today">Cosa vuoi fare oggi?</string>
     <string name="home_green_certificate_title">Digital Green Certificate</string>
     <string name="green_pass_title">Digital Green Certificate</string>
     <string name="green_pass_description">Il Digital Green Certificate ti permette di certificare la tua immunità al COVID-19.</string>

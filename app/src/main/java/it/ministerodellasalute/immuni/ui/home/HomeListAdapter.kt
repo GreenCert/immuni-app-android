@@ -206,11 +206,6 @@ class HomeListAdapter(
                     }
                 }
             }
-            is GreenPassVH -> {
-                if (HomeFragment.OPEN_DIALOG_GREEN_PASS) {
-                    onItemClick(position)
-                }
-            }
             is DisableExposureApiVH -> {
                 holder.disableExposureApi.isEnabled =
                     (items[position] as DisableExposureApi).isEnabled

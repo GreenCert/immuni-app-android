@@ -58,6 +58,13 @@ class HomeFragment : Fragment(),
     // so will be overridden later
     private var statusBarHeight: Int = 0
 
+    override fun onResume() {
+        super.onResume()
+        if (OPEN_DIALOG_GREEN_PASS) {
+            openDialogGreenPass()
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -309,7 +316,7 @@ class HomeFragment : Fragment(),
         if (OPEN_DIALOG_GREEN_PASS) {
             OPEN_DIALOG_GREEN_PASS = false
             GlobalScope.launch {
-                delay(500)
+                delay(300)
                 findNavController().navigate(action)
             }
         } else {
