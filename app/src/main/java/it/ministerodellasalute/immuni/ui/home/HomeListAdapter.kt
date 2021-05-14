@@ -67,11 +67,15 @@ class HomeListAdapter(
         val lottieBg: LottieAnimationView = v.findViewById(R.id.lottieAnimation)
         val lottieFg: LottieAnimationView = v.findViewById(R.id.lottieAnimationForeground)
         val knowMore: TextView = v.findViewById(R.id.knowMore)
+        val generate: Button = v.findViewById(R.id.generate)
+        val generate2: Button = v.findViewById(R.id.generate2)
 
         init {
             reactivate.setSafeOnClickListener { onItemClick(adapterPosition, R.id.reactivate) }
             knowMore.setSafeOnClickListener { onItemClick(adapterPosition, R.id.knowMore) }
             lottieBg.setSafeOnClickListener { onItemClick(adapterPosition, R.id.knowMore) }
+            generate.setSafeOnClickListener { onItemClick(adapterPosition, R.id.generate) }
+            generate2.setSafeOnClickListener { onItemClick(adapterPosition, R.id.generate2) }
         }
     }
 
@@ -149,7 +153,9 @@ class HomeListAdapter(
                 val item = items[position] as ProtectionCard
                 if (item.active) {
                     holder.knowMore.visible()
+                    holder.generate.visible()
                     holder.reactivate.gone()
+                    holder.generate2.gone()
                     holder.title.text = resources.getString(R.string.home_protection_active)
                         .color(
                             '{', '}',
@@ -176,6 +182,8 @@ class HomeListAdapter(
                 } else {
                     holder.knowMore.gone()
                     holder.reactivate.visible()
+                    holder.generate.gone()
+                    holder.generate2.visible()
                     holder.title.text = resources.getString(R.string.home_protection_not_active)
                         .color(
                             '{', '}',
@@ -196,6 +204,11 @@ class HomeListAdapter(
                     } else {
                         holder.reactivate.setTint(context.getColor(R.color.danger))
                     }
+                }
+            }
+            is GreenPassVH -> {
+                if (HomeFragment.OPEN_DIALOG_GREEN_PASS) {
+                    onItemClick(position)
                 }
             }
             is DisableExposureApiVH -> {

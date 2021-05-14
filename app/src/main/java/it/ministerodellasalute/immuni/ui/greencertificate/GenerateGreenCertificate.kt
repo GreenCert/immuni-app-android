@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2020 Presidenza del Consiglio dei Ministri.
+ * Please refer to the AUTHORS file for more information.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package it.ministerodellasalute.immuni.ui.greencertificate
 
 import android.annotation.SuppressLint
@@ -10,14 +25,17 @@ import android.text.TextWatcher
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import it.ministerodellasalute.immuni.GreenCertificateDirections
 import it.ministerodellasalute.immuni.R
 import it.ministerodellasalute.immuni.extensions.activity.loading
+import it.ministerodellasalute.immuni.extensions.activity.setLightStatusBar
 import it.ministerodellasalute.immuni.extensions.utils.byAdding
 import it.ministerodellasalute.immuni.ui.dialog.ConfirmationDialogListener
 import it.ministerodellasalute.immuni.util.ProgressDialogFragment
@@ -25,10 +43,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.generate_green_certificate.*
-import kotlinx.android.synthetic.main.generate_green_certificate.container
-import kotlinx.android.synthetic.main.generate_green_certificate.cunInput
-import kotlinx.android.synthetic.main.generate_green_certificate.healthInsuranceCardInput
-import kotlinx.android.synthetic.main.generate_green_certificate.navigationIcon
 import org.koin.androidx.viewmodel.ext.android.getViewModel
 
 class GenerateGreenCertificate : Fragment(R.layout.generate_green_certificate),
@@ -53,6 +67,12 @@ class GenerateGreenCertificate : Fragment(R.layout.generate_green_certificate),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        (activity as? AppCompatActivity)?.setLightStatusBar(
+            resources.getColor(
+                R.color.background_darker,
+                null
+            )
+        )
 
         viewModel = getViewModel()
 

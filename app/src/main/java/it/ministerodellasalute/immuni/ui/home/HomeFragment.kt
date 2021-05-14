@@ -37,11 +37,20 @@ import it.ministerodellasalute.immuni.logic.exposure.models.ExposureStatus
 import it.ministerodellasalute.immuni.logic.settings.ConfigurationSettingsManager
 import it.ministerodellasalute.immuni.ui.main.MainViewModel
 import kotlinx.android.synthetic.main.home_fragment.*
+import kotlinx.android.synthetic.main.home_protection_state_card.*
+import kotlinx.android.synthetic.main.home_protection_state_card.view.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.getSharedViewModel
 
 class HomeFragment : Fragment(),
     HomeClickListener {
+
+    companion object {
+        var OPEN_DIALOG_GREEN_PASS = false
+    }
 
     private lateinit var viewModel: MainViewModel
 
@@ -228,6 +237,8 @@ class HomeFragment : Fragment(),
                 } else if (viewId == R.id.knowMore) {
                     val action = HomeFragmentDirections.actionCheckAppStatus()
                     findNavController().navigate(action)
+                } else if (viewId == R.id.generate || viewId == R.id.generate2) {
+                    openGreenPass()
                 }
             }
             is SectionHeader -> {
@@ -245,7 +256,7 @@ class HomeFragment : Fragment(),
                 openReportPositivity()
             }
             GreenPassCard -> {
-                openGreenPass()
+                openDialogGreenPass()
             }
             is DisableExposureApi -> {
                 openDisableExposureApi()
@@ -291,5 +302,18 @@ class HomeFragment : Fragment(),
     private fun openGreenPass() {
         val action = HomeFragmentDirections.actionGreenCertificateNav()
         findNavController().navigate(action)
+    }
+
+    private fun openDialogGreenPass() {
+        val action = HomeFragmentDirections.actionGreenCertificateDialog()
+        if (OPEN_DIALOG_GREEN_PASS) {
+            OPEN_DIALOG_GREEN_PASS = false
+            GlobalScope.launch {
+                delay(500)
+                findNavController().navigate(action)
+            }
+        } else {
+            findNavController().navigate(action)
+        }
     }
 }

@@ -17,13 +17,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/green_certificate"
-    app:startDestination="@id/greenCertificate">
-
-    <fragment
-        android:id="@+id/greenCertificate"
-        android:name="it.ministerodellasalute.immuni.ui.greencertificate.GreenCertificate"
-        android:label="GreenCertificate"
-        tools:layout="@layout/green_certificate" />
+    app:startDestination="@id/generateGCFragment">
 
     <fragment
         android:id="@+id/generateGCFragment"
