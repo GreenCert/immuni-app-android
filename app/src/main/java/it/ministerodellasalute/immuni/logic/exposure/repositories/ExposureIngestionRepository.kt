@@ -19,10 +19,7 @@ import androidx.annotation.VisibleForTesting
 import it.ministerodellasalute.immuni.api.immuniApiCall
 import it.ministerodellasalute.immuni.api.services.ExposureIngestionService
 import it.ministerodellasalute.immuni.extensions.utils.sha256
-import it.ministerodellasalute.immuni.logic.exposure.models.CunToken
-import it.ministerodellasalute.immuni.logic.exposure.models.CunValidationResult
-import it.ministerodellasalute.immuni.logic.exposure.models.OtpToken
-import it.ministerodellasalute.immuni.logic.exposure.models.OtpValidationResult
+import it.ministerodellasalute.immuni.logic.exposure.models.*
 import it.ministerodellasalute.immuni.logic.user.models.Province
 import it.ministerodellasalute.immuni.network.api.NetworkError
 import it.ministerodellasalute.immuni.network.api.NetworkResource
@@ -98,6 +95,46 @@ class ExposureIngestionRepository(
                     }
                 } else {
                     CunValidationResult.ConnectionError
+                }
+            }
+        }
+    }
+
+    suspend fun generateGreenPass(
+        token: String,
+        healthInsurance: String,
+        expiredHealthIDDate: String
+    ): GreenPassValidationResult {
+        val response = immuniApiCall {
+            exposureIngestionService.generateGreenPass(
+                isDummyData = 0,
+                authorization = authorizationCun(token),
+                body = ExposureIngestionService.GenerateGreenPassRequest(
+                    healthInsurance = healthInsurance,
+                    expiredHealthIDDate = expiredHealthIDDate
+                )
+            )
+        }
+        return when (response) {
+            is NetworkResource.Success -> GreenPassValidationResult.Success(
+                GreenPassToken(token, response.serverDate!!)
+            )
+            is NetworkResource.Error -> {
+                val errorResponse = response.error
+                if (errorResponse is NetworkError.HttpError) {
+                    when (errorResponse.httpCode) {
+                        401 -> {
+                            GreenPassValidationResult.Unauthorized
+                        }
+                        409 -> {
+                            GreenPassValidationResult.CunAlreadyUsed
+                        }
+                        else -> {
+                            GreenPassValidationResult.ServerError
+                        }
+                    }
+                } else {
+                    GreenPassValidationResult.ConnectionError
                 }
             }
         }

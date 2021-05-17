@@ -83,8 +83,8 @@ class GenerateGreenCertificate : Fragment(R.layout.generate_green_certificate),
         generateGC.setOnClickListener {
             viewModel.genera(
                 cun = cunInput.text.toString(),
-                health_insurance_card = healthInsuranceCardInput.text.toString(),
-                symptom_onset_date = expiredDateHealthIDDateInput.text.toString()
+                health_insurance = healthInsuranceCardInput.text.toString(),
+                healthInsuranceExpiredDate = expiredDateHealthIDDateInput.text.toString()
             )
         }
 

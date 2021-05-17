@@ -22,19 +22,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import it.ministerodellasalute.immuni.R
 import it.ministerodellasalute.immuni.extensions.livedata.Event
-import it.ministerodellasalute.immuni.logic.exposure.models.CunValidationResult
-import it.ministerodellasalute.immuni.logic.upload.CunValidator
+import it.ministerodellasalute.immuni.logic.exposure.ExposureManager
+import it.ministerodellasalute.immuni.logic.exposure.models.GreenPassValidationResult
 import it.ministerodellasalute.immuni.logic.user.UserManager
 import it.ministerodellasalute.immuni.logic.user.models.GreenCertificate
 import it.ministerodellasalute.immuni.logic.user.models.User
-import kotlinx.coroutines.delay
+import it.ministerodellasalute.immuni.logic.utility.DigitValidator
 import kotlinx.coroutines.launch
 import org.koin.core.KoinComponent
 
 class GreenCertificateViewModel(
     val context: Context,
     private val userManager: UserManager,
-    private val cunValidator: CunValidator
+    private val exposureManager: ExposureManager,
+    private val digitValidator: DigitValidator
 ) : ViewModel(),
     KoinComponent {
 
@@ -54,16 +55,15 @@ class GreenCertificateViewModel(
 
     fun genera(
         cun: String,
-        health_insurance_card: String,
-        symptom_onset_date: String?
+        health_insurance: String,
+        healthInsuranceExpiredDate: String
     ) {
-//        if (checkFormHasError(cun, health_insurance_card, symptom_onset_date)) {
-//            return
-//        }
+        if (checkFormHasError(cun, health_insurance, healthInsuranceExpiredDate)) {
+            return
+        }
         viewModelScope.launch {
             _loading.value = true
 
-            delay(1000)
             val user = userManager.user
             userManager.save(
                 User(
@@ -73,16 +73,27 @@ class GreenCertificateViewModel(
                 )
             )
             _navigateToSuccessPage.value = Event(true)
-            _loading.value = false
 
-//            when (val result = exposureManager.validateCun(
-//                cun, health_insurance_card,
-//                symptom_onset_date
+//            when (val result = exposureManager.generateGreenPass(
+//                cun,
+//                health_insurance,
+//                healthInsuranceExpiredDate
 //            )) {
-//                is CunValidationResult.Success -> {
+//                is GreenPassValidationResult.Success -> {
+//                    val user = userManager.user
+//                    userManager.save(
+//                        User(
+//                            region = user.value?.region!!,
+//                            province = user.value?.province!!,
+//                            greenPass = GreenCertificate(
+//                                result.token.greenPassExpiredDate,
+//                                result.token.greenPass
+//                            )
+//                        )
+//                    )
 //                    _navigateToSuccessPage.value = Event(result.token)
 //                }
-//                is CunValidationResult.ServerError -> {
+//                is GreenPassValidationResult.ServerError -> {
 //                    _alertError.value =
 //                        Event(
 //                            listOf(
@@ -91,7 +102,7 @@ class GreenCertificateViewModel(
 //                            )
 //                        )
 //                }
-//                is CunValidationResult.ConnectionError -> {
+//                is GreenPassValidationResult.ConnectionError -> {
 //                    _alertError.value =
 //                        Event(
 //                            listOf(
@@ -100,7 +111,7 @@ class GreenCertificateViewModel(
 //                            )
 //                        )
 //                }
-//                is CunValidationResult.Unauthorized -> {
+//                is GreenPassValidationResult.Unauthorized -> {
 //                    _alertError.value =
 //                        Event(
 //                            listOf(
@@ -109,7 +120,7 @@ class GreenCertificateViewModel(
 //                            )
 //                        )
 //                }
-//                is CunValidationResult.CunAlreadyUsed -> {
+//                is GreenPassValidationResult.CunAlreadyUsed -> {
 //                    _alertError.value =
 //                        Event(
 //                            listOf(
@@ -119,27 +130,29 @@ class GreenCertificateViewModel(
 //                        )
 //                }
 //            }
-//
-//            _loading.value = false
+
+            _loading.value = false
         }
     }
 
     private fun checkFormHasError(
-        cun: String,
+        token: String,
         healthInsuranceCard: String,
-        symptom_onset_date: String?
+        healthInsuranceExpiredDate: String?
     ): Boolean {
         var message = ""
 
-        if (cun.isBlank() || cun.length < 10) {
+        // TODO Verify token format
+        if (token.isBlank() || token.length < 10) {
             message += context.getString(R.string.cun_form_error)
-        } else if (cunValidator.validaCheckDigitCUN(cun) == CunValidationResult.CunWrong) {
+        } else if (digitValidator.validaCheckDigitCUN(token) == GreenPassValidationResult.CunWrong) {
             message += context.getString(R.string.cun_wrong)
         }
+
         if (healthInsuranceCard.isBlank() || healthInsuranceCard.length < 8) {
             message += context.getString(R.string.health_insurance_card_form_error)
         }
-        if (symptom_onset_date != null && symptom_onset_date.isBlank()) {
+        if (healthInsuranceExpiredDate != null && healthInsuranceExpiredDate.isBlank()) {
             message += context.getString(R.string.symptom_onset_date_form_error)
         }
         if (message.isNotEmpty()) {

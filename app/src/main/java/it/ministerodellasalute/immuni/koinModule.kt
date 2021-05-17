@@ -361,7 +361,7 @@ val appModule = module {
     viewModel { StateCloseViewModel(get(), get()) }
     viewModel { SupportViewModel(androidContext(), get(), get()) }
     viewModel { CunViewModel(get(), get(), get()) }
-    viewModel { GreenCertificateViewModel(get(), get(), get()) }
+    viewModel { GreenCertificateViewModel(get(), get(), get(), get()) }
 }
 
 val immuniMoshi = moshi(

@@ -57,6 +57,20 @@ interface ExposureIngestionService {
         @Header("Immuni-Dummy-Data") isDummyData: Int,
         @Body body: ValidateCunRequest
     ): Response<ResponseBody>
+
+    @JsonClass(generateAdapter = true)
+    data class GenerateGreenPassRequest(
+        @field:Json(name = "padding") override val padding: String = "",
+        @field:Json(name = "last_his_number") val healthInsurance: String,
+        @field:Json(name = "expired_healt_ID_date") val expiredHealthIDDate: String
+    ) : RequestWithPadding
+
+    @POST("/v1/ingestion/check-cun")
+    suspend fun generateGreenPass(
+        @Header("Authorization") authorization: String,
+        @Header("Immuni-Dummy-Data") isDummyData: Int,
+        @Body body: GenerateGreenPassRequest
+    ): Response<ResponseBody>
     // endregion
 
     // region: Upload Teks
