@@ -36,12 +36,18 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import it.ministerodellasalute.immuni.R
 import it.ministerodellasalute.immuni.extensions.activity.loading
 import it.ministerodellasalute.immuni.extensions.utils.byAdding
+import it.ministerodellasalute.immuni.extensions.view.gone
+import it.ministerodellasalute.immuni.extensions.view.visible
 import it.ministerodellasalute.immuni.ui.dialog.ConfirmationDialogListener
 import it.ministerodellasalute.immuni.util.ProgressDialogFragment
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.generate_green_certificate.*
+import kotlinx.android.synthetic.main.generate_green_certificate.authorizationError
+import kotlinx.android.synthetic.main.generate_green_certificate.knowMore
+import kotlinx.android.synthetic.main.generate_green_certificate.navigationIcon
+import kotlinx.android.synthetic.main.otp_fragment.*
 import org.koin.androidx.viewmodel.ext.android.getViewModel
 
 class GenerateGreenCertificate : Fragment(R.layout.generate_green_certificate),
@@ -113,6 +119,24 @@ class GenerateGreenCertificate : Fragment(R.layout.generate_green_certificate),
                     }
                     .setCancelable(false)
                     .show()
+            }
+        }
+
+        viewModel.verificationError.observe(viewLifecycleOwner) {
+            it.getContentIfNotHandled()?.let { text ->
+                authorizationError.text = text
+                authorizationError.visible()
+            }
+        }
+
+        viewModel.buttonDisabledMessage.observe(viewLifecycleOwner) {
+            if (it == null) {
+                generateGC.text = getString(R.string.upload_data_verify_button)
+                generateGC.isEnabled = true
+                authorizationError.gone()
+            } else {
+                generateGC.text = it
+                generateGC.isEnabled = false
             }
         }
 

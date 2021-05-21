@@ -16,24 +16,25 @@
 package it.ministerodellasalute.immuni.ui.greencertificate
 
 import android.content.Context
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import it.ministerodellasalute.immuni.R
 import it.ministerodellasalute.immuni.extensions.livedata.Event
 import it.ministerodellasalute.immuni.logic.DigitValidator
 import it.ministerodellasalute.immuni.logic.exposure.ExposureManager
 import it.ministerodellasalute.immuni.logic.exposure.models.GreenPassToken
 import it.ministerodellasalute.immuni.logic.exposure.models.GreenPassValidationResult
+import it.ministerodellasalute.immuni.logic.greencertificate.GenerateDisabler
 import it.ministerodellasalute.immuni.logic.user.UserManager
-import it.ministerodellasalute.immuni.logic.user.models.GreenCertificate
 import it.ministerodellasalute.immuni.logic.user.models.User
+import kotlin.math.round
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.core.KoinComponent
 
 class GreenCertificateViewModel(
     val context: Context,
+    private val generateDisablerManager: GenerateDisabler,
     private val exposureManager: ExposureManager,
     private val userManager: UserManager,
     private val digitValidator: DigitValidator
@@ -46,13 +47,14 @@ class GreenCertificateViewModel(
     private val _alertError = MutableLiveData<Event<List<String>>>()
     val alertError: LiveData<Event<List<String>>> = _alertError
 
+    private val _verificationError = MutableLiveData<Event<String>>()
+    val verificationError: LiveData<Event<String>> = _verificationError
+
+    val buttonDisabledMessage: LiveData<String?> = generateDisablerManager.disabledForSecondsFlow
+        .map { it?.toFormattedQuantityText(context) }.asLiveData()
+
     private val _navigateToSuccessPage = MutableLiveData<Event<GreenPassToken>>()
     val navigateToSuccessPage: LiveData<Event<GreenPassToken>> = _navigateToSuccessPage
-
-    val greenPass = GreenCertificate(
-        "06 Gennaio 2021",
-        "NCFOXN%TS3DH3ZSUZK+.V0ETD%65NL-AH%TAIOOW%IN5H8B48WAS*PX*GKD93B4:ZH6I1\$4JN:IN1MKK9+OC*PP:+P*.1D9R+Q6646C%6RF6:X93O5RF6\$T61R6B46646VY9WC5ME65H1KD34LT HBSZ4GH0B69X5Q/36MZ5BTMUW5-5QNF6O M9R1RF6ECM676746C0FFS6NWE0Y6Z EJZ6KS6YQEE%61Y6LMEA46B 17PPDFPVX1R270:6NEQ0R6AOM6PPL4Q0RUS-EBHU68E1W5XC52T9UF5LDCPF5RBQ746B46O1N646BQ99Q9E\$B ZJY1B QTOD3CQSP\$SR\$S3NDC9UOD3Y.TJET9G3DZI65BDM14NJ*XI-XIFRLL:F*ZR.OVOIF/HLTNP8EFNC3P:HDD8B1MM1M9NTNC30GH.Z8VHL+KLF%CD 810H% 0R%0ZD5CC9T0H\$/I*44SA3ZX8MWB8XU%7AAVMXQQYUGS6S97T95GW38TW959EGNSMJQ115QTBD MD6U725O2DZ2QQ.961GIMC3DUUKUC5QU8N4D40I5:SIK1O606I:VD30O7KK0"
-    )
 
     fun genera(
         typeToken: String,
@@ -65,6 +67,9 @@ class GreenCertificateViewModel(
         }
         viewModelScope.launch {
             _loading.value = true
+
+            delay(1000)
+
             when (val result = exposureManager.generateGreenCard(
                 typeToken, token, health_insurance, expiredHealthIDDate
             )) {
@@ -74,7 +79,7 @@ class GreenCertificateViewModel(
                         User(
                             region = user.value?.region!!,
                             province = user.value?.province!!,
-                            greenPass = greenPass
+                            greenPass = result.greenpass.greenPass
                         )
                     )
                     _navigateToSuccessPage.value = Event(result.greenpass)
@@ -98,13 +103,17 @@ class GreenCertificateViewModel(
                         )
                 }
                 is GreenPassValidationResult.Unauthorized -> {
-                    _alertError.value =
-                        Event(
-                            listOf(
-                                context.getString(R.string.upload_data_api_error_title),
-                                context.getString(R.string.cun_unauthorized)
-                            )
-                        )
+                    generateDisablerManager.submitFailedAttempt()
+                    _verificationError.value =
+                        Event(context.getString(R.string.upload_data_verify_error))
+
+//                    _alertError.value =
+//                        Event(
+//                            listOf(
+//                                context.getString(R.string.upload_data_api_error_title),
+//                                context.getString(R.string.cun_unauthorized)
+//                            )
+//                        )
                 }
             }
 
@@ -161,5 +170,22 @@ class GreenCertificateViewModel(
             return true
         }
         return false
+    }
+
+    private fun Long.toFormattedQuantityText(context: Context): String? {
+        return when {
+            this in 0..60 -> context.resources.getQuantityString(
+                R.plurals.upload_data_verify_loading_button_seconds,
+                this.toInt(), this.toInt()
+            )
+            this > 60 -> {
+                val minutes = round(this.toDouble() / 60).toInt()
+                context.resources.getQuantityString(
+                    R.plurals.upload_data_verify_loading_button_minutes,
+                    minutes, minutes
+                )
+            }
+            else -> null
+        }
     }
 }

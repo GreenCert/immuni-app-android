@@ -240,6 +240,23 @@
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
 
+
+
+            <TextView
+                android:id="@+id/authorizationError"
+                style="@style/SText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/euclid_circular_semi_bold"
+                android:text="@string/upload_data_verify_error"
+                android:textColor="@color/text_error_red"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@id/expiredDateHealthIDDateCard"
+                app:layout_constraintStart_toStartOf="@id/expiredDateHealthIDDateCard"
+                app:layout_constraintTop_toBottomOf="@id/expiredDateHealthIDDateCard" />
+
+
             <Button
                 android:id="@+id/generateGC"
                 style="@style/RoundedButton"
@@ -251,7 +268,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@id/expiredDateHealthIDDateCard"
                 app:layout_constraintStart_toStartOf="@id/expiredDateHealthIDDateCard"
-                app:layout_constraintTop_toBottomOf="@+id/expiredDateHealthIDDateCard" />
+                app:layout_constraintTop_toBottomOf="@+id/authorizationError" />
 
 
 

@@ -36,6 +36,8 @@ import it.ministerodellasalute.immuni.logic.exposure.ExposureManager
 import it.ministerodellasalute.immuni.logic.exposure.models.ExposureStatus
 import it.ministerodellasalute.immuni.logic.exposure.repositories.*
 import it.ministerodellasalute.immuni.logic.forceupdate.ForceUpdateManager
+import it.ministerodellasalute.immuni.logic.greencertificate.GenerateDisabler
+import it.ministerodellasalute.immuni.logic.greencertificate.GenerateDisablerStore
 import it.ministerodellasalute.immuni.logic.notifications.AppNotificationManager
 import it.ministerodellasalute.immuni.logic.settings.ConfigurationSettingsManager
 import it.ministerodellasalute.immuni.logic.settings.repositories.ConfigurationSettingsNetworkRepository
@@ -207,6 +209,21 @@ val appModule = module {
     }
 
     single {
+        GenerateDisablerStore(
+            KVStorage(
+                name = "GenerateDisablerStore",
+                context = androidContext(),
+                encrypted = true,
+                moshi = get()
+            )
+        )
+    }
+
+    single {
+        GenerateDisabler(get())
+    }
+
+    single {
         ExposureNotificationManager(androidContext(), get())
     }
 
@@ -366,7 +383,7 @@ val appModule = module {
     viewModel { StateCloseViewModel(get(), get()) }
     viewModel { SupportViewModel(androidContext(), get(), get()) }
     viewModel { CunViewModel(get(), get(), get()) }
-    viewModel { GreenCertificateViewModel(get(), get(), get(), get()) }
+    viewModel { GreenCertificateViewModel(get(), get(), get(), get(), get()) }
 }
 
 val immuniMoshi = moshi(
