@@ -9,16 +9,19 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".ImmuniApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        tools:ignore="LockedOrientationActivity"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
+        tools:ignore="LockedOrientationActivity">
 
         <receiver android:name=".receivers.UpdateReceiver">
             <intent-filter>
@@ -28,8 +31,8 @@
 
         <receiver
             android:name=".receivers.ExposureNotificationReceiver"
-            android:permission="com.google.android.gms.nearby.exposurenotification.EXPOSURE_CALLBACK"
-            android:exported="true">
+            android:exported="true"
+            android:permission="com.google.android.gms.nearby.exposurenotification.EXPOSURE_CALLBACK">
             <intent-filter>
                 <action android:name="com.google.android.gms.exposurenotification.ACTION_EXPOSURE_STATE_UPDATED" />
             </intent-filter>
@@ -80,8 +83,7 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
         <!-- Keep for instrumentation tests -->
-        <activity
-            android:name=".nearby.NearbyTestActivity"/>
+        <activity android:name=".nearby.NearbyTestActivity" />
     </application>
 
 </manifest>

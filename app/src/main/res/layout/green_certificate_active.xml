@@ -43,6 +43,16 @@
             android:text="@string/dcg_clear_code"
             app:icon="@drawable/ic_trash_white" />
 
+        <Button
+            android:id="@+id/saveToGallery"
+            style="@style/RoundedButton.GreyDark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_gravity="center"
+            android:text="Salva in Galleria"
+            app:icon="@drawable/ic_trash_white" />
+
     </LinearLayout>
 
     <LinearLayout

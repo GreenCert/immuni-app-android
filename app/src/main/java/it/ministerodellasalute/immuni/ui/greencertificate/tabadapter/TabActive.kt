@@ -15,8 +15,15 @@
 
 package it.ministerodellasalute.immuni.ui.greencertificate.tabadapter
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import it.ministerodellasalute.immuni.R
 import it.ministerodellasalute.immuni.extensions.view.setSafeOnClickListener
@@ -35,6 +42,7 @@ class TabActive : Fragment(R.layout.green_certificate_active), KoinComponent,
 
     private lateinit var userManager: UserManager
     private var fragmentParent: Fragment? = null
+    private var filename: String = "GreenCard"
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -54,6 +62,10 @@ class TabActive : Fragment(R.layout.green_certificate_active), KoinComponent,
                 requestCode = 0
             )
         }
+
+        saveToGallery.setSafeOnClickListener {
+            checkPermission()
+        }
     }
 
     private fun setVisibilityQR() {
@@ -68,21 +80,75 @@ class TabActive : Fragment(R.layout.green_certificate_active), KoinComponent,
     }
 
     override fun onDialogPositive(requestCode: Int) {
-        val user = userManager.user
-        userManager.save(
-            User(
-                region = user.value?.region!!,
-                province = user.value?.province!!,
-                greenPass = null
+        if (requestCode == 0) {
+            val user = userManager.user
+            userManager.save(
+                User(
+                    region = user.value?.region!!,
+                    province = user.value?.province!!,
+                    greenPass = null
+                )
             )
-        )
-        fragmentParent?.tabLayout?.getTabAt(0)?.text = getString(R.string.green_pass_inactive)
-        fragmentParent?.tabLayout?.tabTextColors =
-            resources.getColorStateList(R.color.grey_dark, null)
-        setVisibilityQR()
+            fragmentParent?.tabLayout?.getTabAt(0)?.text = getString(R.string.green_pass_inactive)
+            fragmentParent?.tabLayout?.tabTextColors =
+                resources.getColorStateList(R.color.grey_dark, null)
+            setVisibilityQR()
+        } else {
+            val intent =
+                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            val uri: Uri = Uri.fromParts("package", requireContext().packageName, null)
+            intent.data = uri
+            startActivity(intent)
+        }
     }
 
     override fun onDialogNegative(requestCode: Int) {
         // Pass
+    }
+
+    private fun checkPermission() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            downloadImage()
+        } else {
+            requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 200)
+        }
+    }
+
+    private fun downloadImage() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            ImageUtils.downloadQ(
+                context = requireContext(),
+                bitmap = ImageUtils.convert(userManager.user.value?.greenPass!!.base64),
+                filename = filename
+            )
+        else
+            ImageUtils.downloadLegacy(
+                bitmap = ImageUtils.convert(userManager.user.value?.greenPass!!.base64),
+                filename = filename
+            )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 200 && grantResults.contains(PackageManager.PERMISSION_GRANTED)) {
+            downloadImage()
+        } else {
+            openConfirmationDialog(
+                positiveButton = "Vai a Impostazioni",
+                negativeButton = "Cancella",
+                message = "E' necessario attivare i permessi di scrittura",
+                title = "Permesso richiesto",
+                cancelable = true,
+                requestCode = 1
+            )
+        }
     }
 }
